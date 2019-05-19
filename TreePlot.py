@@ -68,6 +68,12 @@ class TreePlot:
                 'weight': 'normal',
                 'size': 20,
                 }
+
+        ax = f.add_subplot(1, 3, 3)
+        pl.imshow(currentNode.state.draw_possible_values())
+        ax.set_yticks(range(len(CSP.variables)))
+        ax.set_yticklabels(CSP.variables)
+
         for variable in CSP.variables:
             avgx = 0
             avgy = 0

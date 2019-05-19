@@ -5,13 +5,26 @@ import copy
 
 
 class State:
-    def __init__(self, assignment = None, variable = None, value = None):
+    def __init__(self, assignment = None, possible_values = None, variable = None, value = None):
         if assignment is None:
             self.assignment = self.get_initial_state()
+            self.possible_values = collections.OrderedDict()
+            for variable in CSP.variables:
+                self.possible_values[variable] = copy.deepcopy(CSP.domain_values)
         else:
             assignment1 = copy.deepcopy(assignment)
             assignment1[variable] = value
             self.assignment = assignment1
+
+            possible_values1 = copy.deepcopy(possible_values)
+            possible_values1[variable] = [value]
+
+            for neighbour in CSP.constraints[variable]:
+                if neighbour not in self.assignment:
+                    if value in possible_values1[neighbour]:
+                        possible_values1[neighbour].remove(value)
+
+            self.possible_values = possible_values1
 
     def get_initial_state(self):
         return collections.OrderedDict()
@@ -83,6 +96,12 @@ class State:
     def check_goal_state(self):
         return len(self.assignment) == len(CSP.variables)
 
+    def forward_check(self):
+        for values in self.possible_values.itervalues():
+            if len(values) == 0:
+                return False
+        return True
+
     def draw_state(self):
         image = np.zeros((7, 7, 3), np.uint8)
         for key in self.assignment:
@@ -94,4 +113,16 @@ class State:
                 channel_index = 2
             for (x, y) in CSP.positions[key]:
                 image[x, y, channel_index] = 255
+        return image
+
+    def draw_possible_values(self):
+        image = np.zeros((len(CSP.variables), 3, 3), np.uint8)
+        for key in self.possible_values.keys():
+            index = CSP.variables.index(key)
+            if "red" in self.possible_values[key]:
+                image[index, 0, 0] = 255
+            if "green" in self.possible_values[key]:
+                image[index, 1, 1] = 255
+            if "blue" in self.possible_values[key]:
+                image[index, 2, 2] = 255
         return image

@@ -18,15 +18,16 @@ class BacktrackingSearch():
             print "Reached goal state"
             return True
         else:
-            variable = node.state.select_unassignet_variable()
-            for value in node.state.order_domain_values(variable):
-                if CSP.check_constraints(node.state.assignment, variable, value):
-                    child_node = Node(State(node.state.assignment, variable, value))
-                    node.add_child(child_node)
-                    treeplot = TreePlot()
-                    treeplot.generate_diagram(root_node, child_node)
+            if node.state.forward_check():
+                variable = node.state.select_unassignet_variable()
+                for value in node.state.order_domain_values(variable):
+                    if CSP.check_constraints(node.state.assignment, variable, value):
+                        child_node = Node(State(node.state.assignment, variable, value))
+                        node.add_child(child_node)
+                        treeplot = TreePlot()
+                        treeplot.generate_diagram(root_node, child_node)
 
-                    result = self.perform_backtrack_search(root_node, child_node)
-                    if result is True:
-                        return True
+                        result = self.perform_backtrack_search(root_node, child_node)
+                        if result is True:
+                            return True
             return False
