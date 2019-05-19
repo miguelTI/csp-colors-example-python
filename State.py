@@ -2,6 +2,7 @@ import CSP
 import collections
 import numpy as np
 import copy
+from collections import deque
 
 
 class State:
@@ -42,6 +43,53 @@ class State:
             if neighbour not in self.assignment:
                 count += 1
         return count
+
+    def get_constraints_queue(self):
+        queue = []
+        for key in CSP.variables:
+            for neighbour in CSP.constraints[key]:
+                if [neighbour, key] not in queue:
+                    queue.append([key, neighbour])
+        return queue
+
+    def remove_values(self, possible_values, variable1, variable2):
+        removed = False
+        possible_values1 = possible_values[variable1]
+        possible_values2 = possible_values[variable2]
+
+        for value1 in possible_values1:
+            satisfy_count = 0
+            for value2 in possible_values2:
+                if value1 != value2:
+                    satisfy_count += 1
+            if satisfy_count == 0:
+                possible_values[variable1].remove(value1)
+                removed = True
+                print "Removed", variable1, variable2, value1, " : ", removed
+        return removed
+
+    def arc_consistency(self):
+        queue = deque(copy.deepcopy(self.get_constraints_queue()))
+        print "Queue", queue
+
+        possible_values = copy.deepcopy(self.possible_values)
+        print "Possible Values", possible_values
+
+        while len(queue) > 0:
+            for variable in CSP.variables:
+                if len(possible_values[variable]) == 0:
+                    print "No possible values for a variable", variable
+                    return False
+
+            (variable1, variable2) = queue.popleft()
+            print (variable1, variable2)
+
+            if self.remove_values(possible_values, variable1, variable2):
+                for neighbour in CSP.constraints[variable1]:
+                    if neighbour != variable2:
+                        print "Adding neighbour", (neighbour, variable1)
+
+        return True
 
     def select_unassignet_variable(self):
         remaining_values = {}
